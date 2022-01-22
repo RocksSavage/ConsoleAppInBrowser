@@ -3,8 +3,6 @@
 public class MyGame
 {
     string input { get; set; }
-    int cursorx = 0;
-    int cursory = 0;
 
 	public MyGame()
 	{
@@ -13,13 +11,13 @@ public class MyGame
     public void initialize()
     {
         Console.WriteLine("GameLoop Demo Initializing...");
+        Console.Write("[cmd:]");
     }
 
     public void run()
     {
         while (true)
         {
-            Console.SetCursorPosition(0, 10);
             processInput();
             update();
             render();
@@ -33,8 +31,13 @@ public class MyGame
             ConsoleKeyInfo key = Console.ReadKey();
             if (key.Key == ConsoleKey.Backspace)
             {
-                //input.Remove(input.Length - 1,1);
-                input += "+";
+                input.Remove(input.Length - 1,1);
+            }
+            else if(key.Key == ConsoleKey.Enter)
+            {
+                // Most efficent to put this logic here.
+                Console.SetCursorPosition(0, Console.CursorTop+1);
+                input = "";
             }
             else
             {
@@ -55,23 +58,25 @@ public class MyGame
     }
     public void render() 
     {
-        //Console.Write("\r" + new string(' ', Console.WindowWidth - 1) + "\r");
-        ClearCurrentConsoleLine();
+        // remember where the cursor was to know where it will be
+        //cursorx = Console.CursorLeft;
+        //cursory = Console.CursorTop;
+
+        // wipe the old image off (NOTE: There is a better way to do this with string formatting, but I am lazy)
+        // See https://docs.microsoft.com/en-us/dotnet/api/system.string.format?view=net-6.0 for more on that later.
+        Console.SetCursorPosition(0, Console.CursorTop);
+        Console.WriteLine(new string(' ', Console.WindowWidth));
+
+        // draw the new image
+        Console.SetCursorPosition(0, Console.CursorTop - 1);
         Console.Write("[cmd:]"+input);
 
+        // 
+        //Console.SetCursorPosition(cursorx, Console.CursorTop - 1);
     }
 
     /// <summary>
     /// Thanks dknaak
     /// https://stackoverflow.com/questions/8946808/can-console-clear-be-used-to-only-clear-a-line-instead-of-whole-console/8946847
     /// </summary>
-    public static void ClearCurrentConsoleLine()
-    {
-        int cursorx = Console.CursorLeft;
-        int cursory = Console.CursorTop;
-        Console.SetCursorPosition(0, Console.CursorTop);
-        Console.WriteLine(new string(' ', Console.WindowWidth));
-        Console.SetCursorPosition(cursorx, Console.CursorTop - 1);
-    }
-
 }
