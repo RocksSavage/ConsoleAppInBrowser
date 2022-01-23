@@ -37,7 +37,8 @@ public class MyGame
             ConsoleKeyInfo key = Console.ReadKey();
             if (key.Key == ConsoleKey.Backspace)
             {
-                this.input.Remove(input.Length - 1,1);
+                if (input.Length > 0)
+                    input = input.Remove(input.Length - 1,1);
             }
             else
             {
@@ -66,19 +67,18 @@ public class MyGame
     {
         if (newRender)
         {
-
             // draw the new line over top of old line
             if (enterFlg)
+            {
                 Console.CursorTop++;
+                this.enterFlg = false;
+            }
             Console.SetCursorPosition(0, Console.CursorTop);
             Console.WriteLine(("[cmd:]" + input).PadRight(Console.WindowWidth));
 
             Console.SetCursorPosition(CursorStartingPositionConstant + input.Length, Console.CursorTop - 1);
 
 
-
-            // Reset flags
-            this.enterFlg = false;
         }
         newRender = false;
     }
