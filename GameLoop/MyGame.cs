@@ -1,5 +1,5 @@
 ﻿using System;
-
+using System.Text.RegularExpressions;
 public class MyGame
 {
     string input { get; set; }
@@ -53,6 +53,20 @@ public class MyGame
         //check if last character on input is the Enter char
         if (this.input.EndsWith("\r"))
         {
+            input = input.Remove(input.Length-1,1);
+            if (input == "quit")
+                Environment.Exit(0);
+            
+            // now here you check for a correctly minced line
+            string[] param = input.Split(" ");
+            if (param.Length == 5    &&
+                param[0] == "create" &&
+                param[1] == "event"  &&
+                Regex.IsMatch(param[2], @"^[a-zA-Z]+$") &&
+                Regex.IsMatch(param[3], @"^[0-9]+$")    &&
+                Regex.IsMatch(param[4], @"^[0-9]+$"))
+                Console.WriteLine("Finish this part of teh code!");
+
             this.input = "";
             this.enterFlg = true;
 
@@ -60,7 +74,7 @@ public class MyGame
     }
 
     /// <summary>
-    /// Thanks dknaak
+    /// Thanks, @dknaak
     /// https://stackoverflow.com/questions/8946808/can-console-clear-be-used-to-only-clear-a-line-instead-of-whole-console/8946847
     /// </summary>
     public void render() 
