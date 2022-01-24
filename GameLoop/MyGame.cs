@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 public class MyGame
 {
@@ -6,6 +7,9 @@ public class MyGame
     bool enterFlg { get; set; }
     bool newRender { get; set; }
     int CursorStartingPositionConstant = 6;
+    List<MyEvent> events = new List<MyEvent>();
+    List<MyEvent> printables = new List<MyEvent>();
+    
 	public MyGame()
 	{
         input = "";
@@ -65,12 +69,28 @@ public class MyGame
                 Regex.IsMatch(param[2], @"^[a-zA-Z]+$") &&
                 Regex.IsMatch(param[3], @"^[0-9]+$")    &&
                 Regex.IsMatch(param[4], @"^[0-9]+$"))
-                Console.WriteLine("Finish this part of teh code!");
-
+            {
+                TimeSpan interval = TimeSpan.FromMilliseconds(int.Parse(param[3])).Duration(); // NOTE: I call 'Duration' to force value to always be positive. 
+                events.Add(new MyEvent(param[2], int.Parse(param[4]), DateTime.Now, interval) );
+            }
             this.input = "";
             this.enterFlg = true;
 
         }
+
+        // wipe old cache
+        printables.Clear();
+
+        foreach (MyEvent theevent in events)
+        {
+            if (theevent.timestamp + theevent.passedTime >= DateTime.Now)
+            {
+                printables.Add(theevent);
+                theevent.timestamp = DateTime.Now;
+                theevent.eventRemainingCount--;
+            }
+        }
+
     }
 
     /// <summary>
@@ -96,5 +116,23 @@ public class MyGame
         }
         newRender = false;
     }
+    /// <summary>
+    /// Utility class for tracking types
+    /// </summary>
+    class MyEvent
+    {
+        public string eventName { get; set; }
+        public int eventRemainingCount { get; set; }
+        public DateTime timestamp { get; set; }
+        public TimeSpan passedTime { get; set; }
 
+        public MyEvent(string name, int count, DateTime timestampt, TimeSpan passed)
+        {
+            eventName = (name);
+            eventRemainingCount = count;
+            timestamp = timestampt;
+            passedTime = passed;
+        }
+
+    }
 }
