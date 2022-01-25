@@ -7,6 +7,7 @@ public class MyGame
     bool enterFlg { get; set; }
     bool newRender { get; set; }
     int CursorStartingPositionConstant = 6;
+    DateTime lastUpdateTimestamp = DateTime.Now;
     List<MyEvent> events = new List<MyEvent>();
     List<MyEvent> printables = new List<MyEvent>();
     
@@ -28,7 +29,7 @@ public class MyGame
         while (true)
         {
             processInput();
-            update();
+            update(this.lastUpdateTimestamp - DateTime.Now);
             render();
         }
     }
@@ -52,7 +53,7 @@ public class MyGame
 
     }
 
-    public void update(/*TimeSpan elapsedTime*/)
+    public void update(TimeSpan elapsedTime)
     {
         //check if last character on input is the Enter char
         if (this.input.EndsWith("\r"))
@@ -81,16 +82,42 @@ public class MyGame
         // wipe old cache
         printables.Clear();
 
+        // init items marked for deletion
+        List<MyEvent> deletethese = new List<MyEvent>();
+
+        var dummy = true; // deletelater
+
         foreach (MyEvent theevent in events)
         {
-            if (theevent.timestamp + theevent.passedTime >= DateTime.Now)
+            // mark events for deletion that have reached their end (removed subsequently)
+            if (theevent.eventRemainingCount < 1)
+            {
+                deletethese.Add(theevent);
+            }
+            //if (theevent.timestamp.Add(elapsedTime) >= DateTime.Now)
+            if (dummy)
             {
                 printables.Add(theevent);
                 theevent.timestamp = DateTime.Now;
                 theevent.eventRemainingCount--;
+
             }
+            //if(dummy)
+            //{
+            //    printables.Add(new MyEvent("bob", 10, DateTime.Now, DateTime.Now - DateTime.Now) );
+            //    theevent.timestamp = DateTime.Now;
+            //    theevent.eventRemainingCount--;
+            //    dummy = false;
+            //}
         }
 
+        events.RemoveAll(x => deletethese.Contains(x));
+
+        // if we found events that will fire this cycle
+        if (printables.Count > 0)
+            newRender = true;
+
+        this.lastUpdateTimestamp = DateTime.Now;
     }
 
     /// <summary>
@@ -99,23 +126,37 @@ public class MyGame
     /// </summary>
     public void render() 
     {
-        if (newRender)
-        {
-            // draw the new line over top of old line
+        //if (newRender)
+        //{
+            // if the enter button was pressed, we draw over the top of the next line
+            // instead of the line our cursor is currently on. 
             if (enterFlg)
             {
                 Console.CursorTop++;
                 this.enterFlg = false;
             }
+            
+            // cursor to left
             Console.SetCursorPosition(0, Console.CursorTop);
+
+            // Print all events that have fired.
+            foreach (MyEvent theevent in printables)
+            {
+                Console.WriteLine($"Event: {theevent.eventName} ({theevent.eventRemainingCount} remaining)");
+            }
+
+            // Re-draw the command line, line. 
             Console.WriteLine(("[cmd:]" + input).PadRight(Console.WindowWidth));
 
+            // Put the cursor back where it should go
             Console.SetCursorPosition(CursorStartingPositionConstant + input.Length, Console.CursorTop - 1);
 
 
-        }
-        newRender = false;
+        //}
+        newRender = false; /// DELETELATER you n
     }
+
+
     /// <summary>
     /// Utility class for tracking types
     /// </summary>
@@ -124,14 +165,15 @@ public class MyGame
         public string eventName { get; set; }
         public int eventRemainingCount { get; set; }
         public DateTime timestamp { get; set; }
-        public TimeSpan passedTime { get; set; }
+        public TimeSpan interval { get; set; }
+
 
         public MyEvent(string name, int count, DateTime timestampt, TimeSpan passed)
         {
             eventName = (name);
             eventRemainingCount = count;
             timestamp = timestampt;
-            passedTime = passed;
+            interval = passed;
         }
 
     }
