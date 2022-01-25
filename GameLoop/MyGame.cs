@@ -85,8 +85,6 @@ public class MyGame
         // init items marked for deletion
         List<MyEvent> deletethese = new List<MyEvent>();
 
-        var dummy = true; // deletelater
-
         foreach (MyEvent theevent in events)
         {
             // mark events for deletion that have reached their end (removed subsequently)
@@ -94,21 +92,12 @@ public class MyGame
             {
                 deletethese.Add(theevent);
             }
-            //if (theevent.timestamp.Add(elapsedTime) >= DateTime.Now)
-            if (dummy)
+            if (theevent.timestamp.Add(theevent.interval) < lastUpdateTimestamp.Add( elapsedTime ) )
             {
-                printables.Add(theevent);
                 theevent.timestamp = DateTime.Now;
                 theevent.eventRemainingCount--;
-
+                printables.Add(theevent);
             }
-            //if(dummy)
-            //{
-            //    printables.Add(new MyEvent("bob", 10, DateTime.Now, DateTime.Now - DateTime.Now) );
-            //    theevent.timestamp = DateTime.Now;
-            //    theevent.eventRemainingCount--;
-            //    dummy = false;
-            //}
         }
 
         events.RemoveAll(x => deletethese.Contains(x));
@@ -126,8 +115,8 @@ public class MyGame
     /// </summary>
     public void render() 
     {
-        //if (newRender)
-        //{
+        if (newRender)
+        {
             // if the enter button was pressed, we draw over the top of the next line
             // instead of the line our cursor is currently on. 
             if (enterFlg)
@@ -142,7 +131,7 @@ public class MyGame
             // Print all events that have fired.
             foreach (MyEvent theevent in printables)
             {
-                Console.WriteLine($"Event: {theevent.eventName} ({theevent.eventRemainingCount} remaining)");
+                Console.WriteLine($"        Event: {theevent.eventName} ({theevent.eventRemainingCount} remaining)".PadRight(Console.WindowWidth) );
             }
 
             // Re-draw the command line, line. 
@@ -151,9 +140,8 @@ public class MyGame
             // Put the cursor back where it should go
             Console.SetCursorPosition(CursorStartingPositionConstant + input.Length, Console.CursorTop - 1);
 
-
-        //}
-        newRender = false; /// DELETELATER you n
+        } // end IF RENDER
+        newRender = false;
     }
 
 
